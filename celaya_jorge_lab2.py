@@ -8,6 +8,7 @@ Code Summary:
 
 from time import strftime
 import pandas as pd
+import matplotlib.pyplot as plt
 import csv
 import datetime as dt
 
@@ -97,22 +98,28 @@ def ten_highest_days(input_file):
           [0:9][['Date', 'New Cases']].to_string(index=False))
 
 
-def by_month(input_file):
+def monthly_stats(input_file):
     data = pd.read_csv(input_file, header=2)
     # data = data.rename(columns={'Date': 'Month'})
     data.index = pd.to_datetime(
         data['Date'])
 
-    df = data.groupby(by=[data.index.month]).describe()
-    print(df.style.format({'Date': lambda t: t.strftime('%b')}))
+    print(data.groupby(by=[data.index.month]).describe())
+    # print(df.style.format({'Date': lambda t: t.strftime('%b')}))
+
+
+def graph(input_file):
+    data = pd.read_csv(input_file, header=2)
+    print(data.plot())
+    plt.show()
+
+    return
 
 
 def main():
     # implement menu for functions here w/ try-catch blocks
-    # data = duplicate_data(
-    #     'data_table_for_daily_case_trends__the_united_states.csv', 'data.csv')
-    by_month(
-        'data_table_for_daily_case_trends__the_united_states.csv')
+    # graph('data_table_for_daily_case_trends__the_united_states.csv')
+    monthly_stats('data_table_for_daily_case_trends__the_united_states.csv')
 
     return
 
