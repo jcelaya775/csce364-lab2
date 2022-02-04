@@ -12,12 +12,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import csv
 import datetime as dt
+from os.path import exists
 
 
 # Copy all lines of a csv file to an output csv file
 def duplicate_data(input_file, output_file):
     data = []
-    with open(input_file) as infile, open(output_file, 'w') as outfile:
+    with open(input_file) as infile, open(output_file, 'w', newline='') as outfile:
         reader = csv.reader(infile)
         writer = csv.writer(outfile, delimiter=',')
 
@@ -33,7 +34,7 @@ def duplicate_data(input_file, output_file):
 # Copy only the rows from a csv file that
 # contain data to an output file
 def copy_data(input_file, output_file):
-    data = pd.read_csv(input_file, skiprows=2)
+    data = pd.read_csv(input_file, header=2)
     data.to_csv(output_file, header=False)
 
     print('The data from the file was copied to data_copy.csv')
@@ -44,7 +45,8 @@ def copy_data(input_file, output_file):
 # Display the file title
 def display_title(input_file):
     with open(input_file) as infile:
-        print(str(next(infile)).strip())
+        line = next(infile)
+        print(line, end='')
 
     return
 
@@ -57,7 +59,7 @@ def display_run_date(input_file):
             line = next(infile)
 
             if (i == 1):
-                print(line)
+                print(line, end='')
 
             i += 1
 
@@ -128,6 +130,9 @@ def monthly_stats(input_file):
 
 def graph(input_file):
     data = pd.read_csv(input_file, header=2)
+
+    print('Displaying graph...')
+
     data.plot()
     plt.show()
 
@@ -135,83 +140,86 @@ def graph(input_file):
 
 
 def user_options():
-    print('Please choose from one of the following.\n')
-    print('\t1.) Duplicate the original file, save it into the project directory.')
-    print('\t2.) Copy the data from the original data (data is all rows except rows 1,2,3) into the project directory.')
-    print('\t3.) Extract and display the file title (first row of data).')
-    print('\t4.) Extract and display the file generation/run-date (second row of data).')
-    print('\t5.) Extract and display the row column names, as a list (third row of data).')
-    print('\t6.) Extract and display data from csv file as a list of lists (each row is a list).')
-    print('\t7.) Extract and display the most recent five days of data (date and cases reported).')
-    print('\t8.) Extract and display the highest number of cases on a single day (date and cases).')
-    print('\t9.) Extract and display the highest ten days of cases (date and cases) .')
+    print('\nPlease choose from one of the following.\n')
+    print('\t1.) Duplicate the original file.')
+    print('\t2.) Copy the data from the original file.')
+    print('\t3.) Display the file title.')
+    print('\t4.) Display the file generation/run-date.')
+    print('\t5.) Display the header row column names.')
+    print('\t6.) Display data from the file as a list.')
+    print('\t7.) Display the most recent five days of data.')
+    print('\t8.) Display the highest number of cases on a single day.')
+    print('\t9.) Display the highest ten days of cases.')
     print('\t10.) Display a summary of each month of data provided.')
-    print('\t11.) Display summary data in a graph.\n')
-    print('Please enter which function to run. (enter number): ', end='')
+    print('\t11.) Display the summary data in a graph.\n')
 
-    ans = 0
+    option = input('Please enter which function to run. (enter number): ')
 
-    try:
-        ans = int(input())
-    except ValueError:
-        print('That was not a valid option. Please try again.\n')
-        user_options()
-
-    return ans
+    return option
 
 
 def main():
     print('Hi, welcome to lab 2.\n')
     ans = input('Would you like to run a function? (yes/no): ')
-    duplicated = False
 
     while(ans.lower() == 'yes'):
-        print()
         option = user_options()
         print()
 
+        if (option.lower() == 'exit' or option.lower() == 'quit'):
+            break
+
+        try:
+            option = int(option)
+        except ValueError:
+            print('That was not a valid option. Please try again.')
+
         if option == 1:
-            if not duplicated:
+            if not exists('duplicate.csv'):
                 duplicate_data(
                     'data_table_for_daily_case_trends__the_united_states.csv', 'duplicate.csv')
-                duplicated = True
             else:
                 print(
-                    'You have already duplicated this file into the current directory. This file already exists.')
+                    'The file was already duplicated into the current directory. This file already exists as \'duplicate.csv\'.')
         elif option == 2:
-            copy_data(
-                'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
+            if not exists('data_copy.csv'):
+                copy_data(
+                    'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
+            else:
+                print(
+                    'The file was already copied into the current directory. This file already exists as \'data_copy.csv\'.')
         elif option == 3:
             display_title(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 4:
-            display_col_names(
+            display_run_date(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 5:
-            display_data(
+            display_col_names(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 6:
-            display_recent(
+            display_data(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 7:
-            get_highest_cases(
+            display_recent(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 8:
-            ten_highest_days(
+            get_highest_cases(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 9:
-            monthly_stats(
+            ten_highest_days(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 10:
-            ten_highest_days(
+            monthly_stats(
                 'data_table_for_daily_case_trends__the_united_states.csv')
         elif option == 11:
-            ten_highest_days(
+            graph(
                 'data_table_for_daily_case_trends__the_united_states.csv')
 
         ans = input('\nWould you like to to run another function? (yes/no): ')
+        print()
 
-    print('\nThank you.')
+    print('Thank you.')
 
     return
 
