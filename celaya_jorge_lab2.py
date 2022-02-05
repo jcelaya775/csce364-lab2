@@ -7,6 +7,7 @@ Code Summary:
 """
 
 from calendar import month
+from operator import index
 from time import strftime
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,8 +35,8 @@ def duplicate_data(input_file, output_file):
 # Copy only the rows from a csv file that
 # contain data to an output file
 def copy_data(input_file, output_file):
-    data = pd.read_csv(input_file, header=2)
-    data.to_csv(output_file, header=False)
+    df = pd.read_csv(input_file, header=2)
+    df.to_csv(output_file, header=False)
 
     print('The data from the file was copied to data_copy.csv')
 
@@ -45,8 +46,8 @@ def copy_data(input_file, output_file):
 # Display the file title
 def display_title(input_file):
     with open(input_file) as infile:
-        line = next(infile)
-        print(line, end='')
+        title = next(infile)
+        print(title[3:], end='')
 
     return
 
@@ -84,32 +85,32 @@ def display_col_names(input_file):
 
 # Display the data from a csv file as a list of lists
 def display_data(input_file):
-    data = pd.read_csv(input_file, header=2)
-    print(data.values)
+    df = pd.read_csv(input_file, header=2)
+    print(df.values)
 
 
 def display_recent(input_file):
     print('Five Most Recent Cases:\n')
-    data = pd.read_csv(input_file, header=2)
-    print(data.head()[['New Cases', 'Date']])
+    df = pd.read_csv(input_file, header=2)
+    print(df.head()[['New Cases', 'Date']])
 
     return
 
 
 # Display the max numbers of cases on any given day from a csv file
 def get_highest_cases(input_file):
-    data = pd.read_csv(input_file, header=2)
-    print(data['New Cases'].max())
+    df = pd.read_csv(input_file, header=2)
+    print(df['New Cases'].max())
 
     return
 
 
 # Display the highest ten days of cases (date and cases)
 def ten_highest_days(input_file):
-    data = pd.read_csv(input_file, header=2)
+    df = pd.read_csv(input_file, header=2)
 
     print('Highest Ten Days of Cases:\n')
-    print(data.sort_values(by='New Cases', ascending=False)
+    print(df.sort_values(by='New Cases', ascending=False)
           [0:9][['Date', 'New Cases']].to_string(index=False))
 
 
@@ -117,23 +118,43 @@ def ten_highest_days(input_file):
 # Create a nicely formatted display that shows the month name,
 # the total cases for the month, and the average daily cases for that month.
 def monthly_stats(input_file):
-    data = pd.read_csv(input_file, header=2)
-    # data = data.rename(columns={'Date': 'Month'})
-    data.index = pd.to_datetime(
-        data['Date'])
+    df = pd.read_csv(input_file, header=2, index_col=False)
+    df = df.rename(columns={'Date': 'Month'})
 
-    print(data.groupby(by=[data.index.month]).describe())
-    # print(df.style.format({'Date': lambda t: t.strftime('%b')}))
+    # convert date column to datetime objects
+    df['Month'] = pd.to_datetime(df['Month'])
+    # format to months only
+    df['Month'] = df['Month'].apply(
+        lambda data: data.strftime('%b'))
+
+    counts = df.groupby('Month').count()
+    counts['Count'] = counts['New Cases']
+
+    print(counts)
+
+    avgs = df.groupby('7-Day Moving Avg').mean()
+    avgs['Average'] = avgs['New Cases']
+
+    print(avgs)
+
+    # drop unused columns
+    df = df.drop(columns=['State', 'New Cases',
+                 '7-Day Moving Avg', 'Historic Cases'])
+
+    # print(counts)
+
+    # print results
+    print(df)
 
     return
 
 
 def graph(input_file):
-    data = pd.read_csv(input_file, header=2)
+    df = pd.read_csv(input_file, header=2)
 
     print('Displaying graph...')
 
-    data.plot()
+    df.plot()
     plt.show()
 
     return
@@ -159,67 +180,69 @@ def user_options():
 
 
 def main():
-    print('Hi, welcome to lab 2.\n')
-    ans = input('Would you like to run a function? (yes/no): ')
+    # print('Hi, welcome to lab 2.\n')
+    # ans = input('Would you like to run a function? (yes/no): ')
 
-    while(ans.lower() == 'yes'):
-        option = user_options()
-        print()
+    # while(ans.lower() == 'yes'):
+    #     option = user_options()
+    #     print()
 
-        if (option.lower() == 'exit' or option.lower() == 'quit'):
-            break
+    #     if (option.lower() == 'exit' or option.lower() == 'quit'):
+    #         break
 
-        try:
-            option = int(option)
-        except ValueError:
-            print('That was not a valid option. Please try again.')
+    #     try:
+    #         option = int(option)
+    #     except ValueError:
+    #         print('That was not a valid option. Please try again.')
 
-        if option == 1:
-            if not exists('duplicate.csv'):
-                duplicate_data(
-                    'data_table_for_daily_case_trends__the_united_states.csv', 'duplicate.csv')
-            else:
-                print(
-                    'The file was already duplicated into the current directory. This file already exists as \'duplicate.csv\'.')
-        elif option == 2:
-            if not exists('data_copy.csv'):
-                copy_data(
-                    'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
-            else:
-                print(
-                    'The file was already copied into the current directory. This file already exists as \'data_copy.csv\'.')
-        elif option == 3:
-            display_title(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 4:
-            display_run_date(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 5:
-            display_col_names(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 6:
-            display_data(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 7:
-            display_recent(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 8:
-            get_highest_cases(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 9:
-            ten_highest_days(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 10:
-            monthly_stats(
-                'data_table_for_daily_case_trends__the_united_states.csv')
-        elif option == 11:
-            graph(
-                'data_table_for_daily_case_trends__the_united_states.csv')
+    #     if option == 1:
+    #         if not exists('duplicate.csv'):
+    #             duplicate_data(
+    #                 'data_table_for_daily_case_trends__the_united_states.csv', 'duplicate.csv')
+    #         else:
+    #             print(
+    #                 'The file was already duplicated into the current directory. This file already exists as \'duplicate.csv\'.')
+    #     elif option == 2:
+    #         if not exists('data_copy.csv'):
+    #             copy_data(
+    #                 'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
+    #         else:
+    #             print(
+    #                 'The file was already copied into the current directory. This file already exists as \'data_copy.csv\'.')
+    #     elif option == 3:
+    #         display_title(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 4:
+    #         display_run_date(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 5:
+    #         display_col_names(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 6:
+    #         display_data(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 7:
+    #         display_recent(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 8:
+    #         get_highest_cases(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 9:
+    #         ten_highest_days(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 10:
+    #         monthly_stats(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
+    #     elif option == 11:
+    #         graph(
+    #             'data_table_for_daily_case_trends__the_united_states.csv')
 
-        ans = input('\nWould you like to to run another function? (yes/no): ')
-        print()
+    #     ans = input('\nWould you like to to run another function? (yes/no): ')
+    #     print()
 
-    print('Thank you.')
+    # print('Thank you.')
+
+    monthly_stats('data_table_for_daily_case_trends__the_united_states.csv')
 
     return
 
