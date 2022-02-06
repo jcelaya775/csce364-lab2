@@ -127,34 +127,36 @@ def monthly_stats(input_file):
     df['Month'] = df['Month'].apply(
         lambda data: data.strftime('%b'))
 
-    counts = df.groupby('Month').count()
-    counts['Count'] = counts['New Cases']
+    # Create counts Series
+    counts = pd.DataFrame()
+    counts['Count'] = 1
+    counts['Count'] = df.groupby('Month')['New Cases'].count()
 
-    print(counts)
+    # Create avgs series
+    avgs = pd.DataFrame()
+    avgs['Average Cases'] = 1
+    avgs['Average Cases'] = df.groupby('Month')['New Cases'].mean()
 
-    avgs = df.groupby('7-Day Moving Avg').mean()
-    avgs['Average'] = avgs['New Cases']
+    # Merge avgs and counts
+    months = pd.merge(counts, avgs, on='Month')
 
-    print(avgs)
+    # List months in order
+    months = months.reindex(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
 
-    # drop unused columns
-    df = df.drop(columns=['State', 'New Cases',
-                 '7-Day Moving Avg', 'Historic Cases'])
-
-    # print(counts)
-
-    # print results
-    print(df)
+    print(months)
 
     return
 
 
 def graph(input_file):
     df = pd.read_csv(input_file, header=2)
+    df = df.describe()
+    print(df)
 
     print('Displaying graph...')
 
-    df.plot()
+    df.plot.bar(rot=0)
     plt.show()
 
     return
@@ -180,69 +182,67 @@ def user_options():
 
 
 def main():
-    # print('Hi, welcome to lab 2.\n')
-    # ans = input('Would you like to run a function? (yes/no): ')
+    print('Hi, welcome to lab 2.\n')
+    ans = input('Would you like to run a function? (yes/no): ')
 
-    # while(ans.lower() == 'yes'):
-    #     option = user_options()
-    #     print()
+    while(ans.lower() == 'yes'):
+        option = user_options()
+        print()
 
-    #     if (option.lower() == 'exit' or option.lower() == 'quit'):
-    #         break
+        if (option.lower() == 'exit' or option.lower() == 'quit'):
+            break
 
-    #     try:
-    #         option = int(option)
-    #     except ValueError:
-    #         print('That was not a valid option. Please try again.')
+        try:
+            option = int(option)
+        except ValueError:
+            print('That was not a valid option. Please try again.')
 
-    #     if option == 1:
-    #         if not exists('duplicate.csv'):
-    #             duplicate_data(
-    #                 'data_table_for_daily_case_trends__the_united_states.csv', 'duplicate.csv')
-    #         else:
-    #             print(
-    #                 'The file was already duplicated into the current directory. This file already exists as \'duplicate.csv\'.')
-    #     elif option == 2:
-    #         if not exists('data_copy.csv'):
-    #             copy_data(
-    #                 'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
-    #         else:
-    #             print(
-    #                 'The file was already copied into the current directory. This file already exists as \'data_copy.csv\'.')
-    #     elif option == 3:
-    #         display_title(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 4:
-    #         display_run_date(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 5:
-    #         display_col_names(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 6:
-    #         display_data(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 7:
-    #         display_recent(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 8:
-    #         get_highest_cases(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 9:
-    #         ten_highest_days(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 10:
-    #         monthly_stats(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
-    #     elif option == 11:
-    #         graph(
-    #             'data_table_for_daily_case_trends__the_united_states.csv')
+        if option == 1:
+            if not exists('duplicate.csv'):
+                duplicate_data(
+                    'data_table_for_daily_case_trends__the_united_states.csv', 'duplicate.csv')
+            else:
+                print(
+                    'The file was already duplicated into the current directory. This file already exists as \'duplicate.csv\'.')
+        elif option == 2:
+            if not exists('data_copy.csv'):
+                copy_data(
+                    'data_table_for_daily_case_trends__the_united_states.csv', 'data_copy.csv')
+            else:
+                print(
+                    'The file was already copied into the current directory. This file already exists as \'data_copy.csv\'.')
+        elif option == 3:
+            display_title(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 4:
+            display_run_date(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 5:
+            display_col_names(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 6:
+            display_data(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 7:
+            display_recent(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 8:
+            get_highest_cases(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 9:
+            ten_highest_days(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 10:
+            monthly_stats(
+                'data_table_for_daily_case_trends__the_united_states.csv')
+        elif option == 11:
+            graph(
+                'data_table_for_daily_case_trends__the_united_states.csv')
 
-    #     ans = input('\nWould you like to to run another function? (yes/no): ')
-    #     print()
+        ans = input('\nWould you like to to run another function? (yes/no): ')
+        print()
 
-    # print('Thank you.')
-
-    monthly_stats('data_table_for_daily_case_trends__the_united_states.csv')
+    print('Thank you.')
 
     return
 
