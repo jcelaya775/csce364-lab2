@@ -92,7 +92,7 @@ def display_data(input_file):
 def display_recent(input_file):
     print('Five Most Recent Cases:\n')
     df = pd.read_csv(input_file, header=2)
-    print(df.head()[['New Cases', 'Date']])
+    print(df.head()[['Date', 'New Cases']])
 
     return
 
@@ -152,8 +152,7 @@ def monthly_stats(input_file):
 def graph(input_file):
     df = pd.read_csv(input_file, header=2)
     df = df.describe()
-    print(df)
-
+    
     print('Displaying graph...')
 
     df.plot.bar(rot=0)
